@@ -1,0 +1,74 @@
+#!/usr/bin/python
+"""A simple programm that countsdown the time untill Christmas 2015"""
+import wx
+import datetime
+
+class AFrame(wx.Frame):
+
+    def __init__ (self):
+        wx.Frame.__init__(self, parent=None, id=-1, title="Countdown to Christmas", size=(500, 500))
+
+        # 2015.12.25 1:00:00
+        self.future_time = datetime.datetime(2015, 12, 25, 1, 0, 0)
+
+        # create timer
+        self.timer = wx.Timer(self)
+        # assign draw_image to timer
+        self.Bind(wx.EVT_TIMER, self.draw_image, self.timer)
+        # start timer
+        self.timer.Start(1000)
+
+        self.statbmp = wx.StaticBitmap(self)
+        self.draw_image()
+        self.Refresh()
+
+        self.Show()
+
+    def draw_image(self, event=None): # event required by timer
+
+        # get deltatime
+        secondsLeft = self.future_time - datetime.datetime.now()
+
+        # get seconds, round to integer,
+        secondsLeft = int(secondsLeft.total_seconds())
+
+        if secondsLeft <= 0:
+            secondsLeft = 0
+            if self.timer.IsRunning():
+                self.timer.Stop()
+
+        # convert to text
+        d, s = divmod(secondsLeft,86400)
+        h, s = divmod(s,3600)
+        m, s = divmod(s, 60)
+        timestamp = 30*"  "
+        if d> 0:
+            time_stamp = "%02d Days %02d Hours %02d Minutes %02d Seconds" % (d,h,m,s)
+        elif h > 0:
+            time_stamp = "%02d Hours %02d Minutes %02d Seconds" % (h,m,s)
+        else:
+            time_stamp = "%02d Minutes %02d Seconds" % (m,s)
+        # select the width and height of the blank bitmap
+        # must fit frame
+        w, h = 500, 500
+
+        # create the blank bitmap as background
+        draw_bmp = wx.EmptyBitmap(w, h)
+
+        #create canvas.
+        canvas = wx.MemoryDC(draw_bmp)
+        #fill the canvas with white
+        canvas.SetBrush(wx.Brush('white'))
+        canvas.Clear()
+
+        #get text dimentions.
+        tw, th = canvas.GetTextExtent(time_stamp)
+
+        #draw the text.
+        canvas.DrawText(time_stamp, (w - tw) / 2, (h - th) / 2 )
+
+        self.statbmp.SetBitmap(draw_bmp)
+
+app = wx.App()
+AFrame()
+app.MainLoop()
